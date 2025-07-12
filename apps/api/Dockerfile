@@ -8,6 +8,6 @@ FROM node:20 AS prod
 WORKDIR /app
 COPY --from=build /app/.output ./.output
 COPY package*.json ./
-# Ne refais pas npm ci ici !
+
 EXPOSE 3000
 CMD ["node", ".output/server/index.mjs"]
