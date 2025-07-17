@@ -15,6 +15,5 @@ COPY --from=build /app/package*.json ./
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/prisma/seed.ts ./prisma/seed.ts
-COPY --from=build /app/prisma/tsconfig.seed.json ./prisma/tsconfig.seed.json
 EXPOSE 3000
 CMD ["node", ".output/server/index.mjs"]
