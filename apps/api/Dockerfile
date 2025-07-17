@@ -7,6 +7,8 @@ RUN npm ci
 RUN npx prisma generate
 RUN npm run build
 RUN apt-get update && apt-get install -y vim nano procps
+RUN apt-get update -y && apt-get install -y openssl postgresql-client && rm -rf /var/lib/apt/lists/*
+
 
 FROM node:20-slim AS prod
 WORKDIR /app
