@@ -50,7 +50,7 @@ export default definePrivateEventHandler(async (event, {auth}) => {
     });
 
     return {
-        articles: articles.map((article: any) => articleMapper(article, auth.id)),
+        articles: articles.map((article: any) => articleMapper(article, auth?.id)),
         articlesCount,
     };
 });

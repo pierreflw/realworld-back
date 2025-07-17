@@ -8,9 +8,10 @@ const articleMapper = (article: any, id?: number) => ({
   tagList: article.tagList.map((tag: any) => tag.name),
   createdAt: article.createdAt,
   updatedAt: article.updatedAt,
-  favorited: article.favoritedBy.some((item: any) => item.id === id),
+  favorited: id ? article.favoritedBy.some((item: any) => item.id === id) : false,
   favoritesCount: article.favoritedBy.length,
-  author: article.author ? authorMapper(article.author, id) : null,
+  author: authorMapper(article.author, id),
 });
+
 
 export default articleMapper;
