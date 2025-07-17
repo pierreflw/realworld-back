@@ -1,63 +1,78 @@
-import {
-  randEmail,
-  randFullName,
-  randLines,
-  randParagraph,
-  randPassword,
-  randPhrase,
-  randWord,
-} from '@ngneat/falso';
 import { PrismaClient } from '@prisma/client';
-import { RegisteredUser } from '../app/models/registered-user.model';
-import { createUser } from '../app/services/auth.service';
-import { addComment, createArticle } from '../app/services/article.service';
 
 const prisma = new PrismaClient();
 
-export const generateUser = async (): Promise<RegisteredUser> =>
-  createUser({
-    username: randFullName(),
-    email: randEmail(),
-    password: randPassword(),
-    image: 'https://api.realworld.io/images/demo-avatar.png',
-    demo: true,
+async function main() {
+  // Suppression en cascade pour éviter les contraintes
+  await prisma.comment.deleteMany();
+  await prisma.article.deleteMany();
+  await prisma.tag.deleteMany();
+  await prisma.user.deleteMany();
+
+  // Crée 2 tags de démo
+  const tags = await prisma.tag.createMany({
+    data: [
+      { name: 'demo' },
+      { name: 'seed' },
+    ],
   });
 
-export const generateArticle = async (id: number) =>
-  createArticle(
-    {
-      title: randPhrase(),
-      description: randParagraph(),
-      body: randLines({ length: 10 }).join(' '),
-      tagList: randWord({ length: 4 }),
-    },
-    id,
+  // Crée 3 utilisateurs
+  const users = await Promise.all(
+    Array.from({ length: 3 }).map((_, i) =>
+      prisma.user.create({
+        data: {
+          username: `user${i + 1}`,
+          email: `user${i + 1}@example.com`,
+          password: 'password123',
+        },
+      })
+    )
   );
 
-export const generateComment = async (id: number, slug: string) =>
-  addComment(randParagraph(), slug, id);
+  // Récupère les tags insérés
+  const tagList = await prisma.tag.findMany();
 
-export const main = async () => {
-  const users = await Promise.all(Array.from({ length: 3 }, () => generateUser()));
-  users?.map(user => user);
+  // Crée 2 articles par user avec 2 tags
+  for (const user of users) {
+    for (let a = 1; a <= 2; a++) {
+      const title = `Article ${a} by ${user.username}`;
+      const slug = `${user.username}-article-${a}-${Date.now()}`;
+      const article = await prisma.article.create({
+        data: {
+          title,
+          slug,
+          description: `Description for ${title}`,
+          body: `Contenu de ${title}`,
+          author: { connect: { id: user.id } },
+          tagList: {
+            connect: tagList.map(tag => ({ id: tag.id })),
+          },
+        },
+      });
 
-  // eslint-disable-next-line no-restricted-syntax
-  for await (const user of users) {
-    const articles = await Promise.all(Array.from({ length: 2 }, () => generateArticle(user.id)));
-
-    // eslint-disable-next-line no-restricted-syntax
-    for await (const article of articles) {
-      await Promise.all(users.map(userItem => generateComment(userItem.id, article.slug)));
+      // 2 commentaires par article
+      for (let c = 1; c <= 2; c++) {
+        await prisma.comment.create({
+          data: {
+            body: `Commentaire ${c} sur ${title}`,
+            author: { connect: { id: user.id } },
+            article: { connect: { id: article.id } },
+          },
+        });
+      }
     }
   }
-};
+
+  console.log('✅ Base seedée avec succès !');
+}
 
 main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
   .catch(async (err) => {
-    console.log(err)
+    console.error(err);
     await prisma.$disconnect();
     process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
   });
