@@ -5,7 +5,7 @@
     "dev": "nitro dev",
     "prepare": "nitro prepare",
     "preview": "node .output/server/index.mjs",
-    "start": "node .output/server/index.mjs", 
+    "start": "node .output/server/index.mjs",
     "db:seed": "npx prisma db seed"
   },
   "prisma": {
@@ -20,6 +20,7 @@
   "dependencies": {
     "@prisma/client": "^5.18.0",
     "bcryptjs": "^2.4.3",
+    "dotenv": "^17.2.0",
     "slugify": "^1.6.0"
   }
 }

@@ -12,6 +12,7 @@ RUN apt-get update -y && apt-get install -y openssl postgresql-client && rm -rf 
 
 FROM node:20-slim AS prod
 WORKDIR /app
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/.output ./.output
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/prisma ./prisma
