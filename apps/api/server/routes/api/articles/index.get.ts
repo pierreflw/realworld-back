@@ -1,7 +1,7 @@
 import articleMapper from "~/utils/article.mapper";
-import {definePrivateEventHandler} from "~/auth-event-handler";
+import { definePrivateEventHandler } from "~/auth-event-handler";
 
-export default definePrivateEventHandler(async (event, {auth}) => {
+export default definePrivateEventHandler(async (event, { auth }) => {
     const query = getQuery(event);
 
     const andQueries = buildFindAllQuery(query, auth);
@@ -48,9 +48,9 @@ export default definePrivateEventHandler(async (event, {auth}) => {
         articles: articles.map((article: any) => articleMapper(article, auth.id)),
         articlesCount,
     };
-}, {requireAuth: false});
+}, { requireAuth: false });
 
-const buildFindAllQuery = (query: any, auth: {id: number} | undefined) => {
+const buildFindAllQuery = (query: any, auth: { id: number } | undefined) => {
     const queries: any = [];
     const orAuthorQuery = [];
     const andAuthorQuery = [];
@@ -77,12 +77,14 @@ const buildFindAllQuery = (query: any, auth: {id: number} | undefined) => {
         });
     }
 
-    const authorQuery = {
-        author: {
-            OR: orAuthorQuery,
-            AND: andAuthorQuery,
-        },
-    };
+    if (orAuthorQuery.length > 0 || andAuthorQuery.length > 0) {
+        queries.push({
+            author: {
+                OR: orAuthorQuery,
+                AND: andAuthorQuery,
+            },
+        });
+    }
 
     queries.push(authorQuery);
 

@@ -25,6 +25,7 @@ async function main() {
           username: `user${i + 1}`,
           email: `user${i + 1}@example.com`,
           password: 'password123',
+          demo: true  
         },
       })
     )
